@@ -6,10 +6,7 @@ import struct
 import time 
 from itertools import count 
 
-wifi_list_rssi = {} 
-lidar_device = {} 
-pack_payload_lidar = {} 
-pack_payload = {} 
+ 
 def distance_RSSI(Pt,Pl,rssi):
         A = Pt-Pl 
         c_dat = (A-rssi)*0.014336239
@@ -41,35 +38,31 @@ def Lidar_info_report(email,lidar_name,unit_converter,serial_data):
             #print the ranges and angles
             #print("Ranges:", ranges,len(ranges))
             #print("Angles:", angles,len(angles))
-            pack_payload_lidar[lidar_name] = {"Ranges":ranges,"Angles":angles} # Get the range and angle from the lidar to post back into the server 
-            lidar_device[email] = pack_payload_lidar
+            pack_payload_lidar = {lidar_name:{"Ranges":ranges,"Angles":angles}} # Get the range and angle from the lidar to post back into the server 
+            lidar_device = {email:pack_payload_lidar}
+            lidar_post = requests.post("https://roboreactor.com/lidar_post_data",json=lidar_device) 
             return lidar_device  
 
 def rssi_distance_report(email,wifi_name):  
+  #Generate the navigation system 
   try:
        wifi_strange = subprocess.check_output("iwlist scanning",shell=True)
        get_rssi = wifi_strange.decode()
-       #print(get_rssi.split("\n")[3].split("    ")[5]) 
-       #print(get_rssi.split("\n")[4].split("    ")[5])
-       #print(get_rssi.split("\n")[6].split("    ")[5]) 
-       data_local = get_rssi.split("\n")[4].split("    ")[5].split(" ")
-       #print(data_local)
+       data_local = get_rssi.split("\n")[4].split("    ")[5].split(" ")       
        A_diff = data_local[0].split("=")[1].split("/")
        rssi_value = data_local[3].split("=")[1]
        wifi_name = get_rssi.split("\n")[6].split("    ")[5].split(":")[1]
        distance_data =   distance_RSSI(int(A_diff[1]),int(A_diff[0]),float(rssi_value))
-       wifi_list_rssi[wifi_name] = {'wifi_freq':get_rssi.split("\n")[3].split("    ")[5].split(":")[1],'rssi_signal':data_local[3].split("=")[1],"A":int(A_diff[1]) - int(A_diff[0]),'distance':distance_data}
-       #print(wifi_list_rssi)
-       pack_payload[email] = wifi_list_rssi
+       wifi_list_rssi = {wifi_name:{'wifi_freq':get_rssi.split("\n")[3].split("    ")[5].split(":")[1],'rssi_signal':data_local[3].split("=")[1],"A":int(A_diff[1]) - int(A_diff[0]),'distance':distance_data}}
+       pack_payload = {email:wifi_list_rssi}
        payload_data = pack_payload
        rssi_post_robot = requests.post("https://roboreactor.com/rssi_robot_client",json=payload_data)
-       #print(rssi_post_robot.json())
-       return rssi_post_robot.json()    # Return the json value report to the back end data 
+       return payload_data   # Return the json value report to the back end data 
   except:
         print("Current wifi not found you are not connected")
 def point_cloud_pcd_generator(email,camera_name):
              print("Point cloud camera devices ",email,camera_name)  #Get the point cloud data to send into the server 
-              
+                               
 
    
 
