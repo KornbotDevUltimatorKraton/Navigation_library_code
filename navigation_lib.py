@@ -68,7 +68,7 @@ def rssi_distance_report(email,wifi_name):
        return payload_data   # Return the json value report to the back end data 
   except:
         print("Current wifi not found you are not connected")
-def point_cloud_pcd_generator(camera_name,server_url,payload_command):
+def point_cloud_pcd_generator(camera_name,payload_command):
              #Post the image from the camera input to the front end of the server   
              while True:
                       # Capture a frame from the video stream
@@ -82,7 +82,7 @@ def point_cloud_pcd_generator(camera_name,server_url,payload_command):
                       jpeg_b64 = base64.b64encode(jpeg).decode("utf-8")
                       print(jpeg_b64)
                       # Send the frame to the server
-                      requests.post(server_url, json=payload_command) # Post request to the website 
+                      requests.post("https://roboreactor.com/update_image", json=payload_command) # Post request to the website  for the update poit cloud data into the server  
 
 def Camera_image_sensor(email,project_name,camera_name,cam_index,device_name):
              #Post the image from the camera input to the front end of the server   
